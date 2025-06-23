@@ -4,7 +4,7 @@
 // You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
-const hre = require("hardhat");
+const hre = require('hardhat')
 
 async function main() {
   const NAME = 'Dapp University'
@@ -17,11 +17,16 @@ async function main() {
 
   await token.deployed()
   console.log(`Token deployed to: ${token.address}\n`)
+
+  const DAO = await hre.ethers.getContractFactory('DAO')
+  const dao = await DAO.deploy(token.address, '500000000000000000000001')
+
+  console.log(`DAO deployed to: ${dao.address}\n`)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+  console.error(error)
+  process.exitCode = 1
+})

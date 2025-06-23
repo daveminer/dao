@@ -3,24 +3,42 @@ import { Container } from 'react-bootstrap'
 import { ethers } from 'ethers'
 
 // Components
+import Create from './Create'
 import Navigation from './Navigation'
 import Loading from './Loading'
+import Proposals from './Proposals'
 
 // ABIs: Import your contract ABIs here
-// import TOKEN_ABI from '../abis/Token.json'
+import DAO_ABI from '../abis/DAO.json'
 
 // Config: Import your network config here
-// import config from '../config.json';
+import config from '../config.json'
+import { setSelectionRange } from '@testing-library/user-event/dist/utils'
 
 function App() {
+  const [provider, setProvider] = useState(null)
   const [account, setAccount] = useState(null)
-  const [balance, setBalance] = useState(0)
-
+  const [dao, setDao] = useState(null)
+  const [treasuryBalance, setTreasuryBalance] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [proposals, setProposals] = useState([])
+  const [quorum, setQuorum] = useState(null)
 
   const loadBlockchainData = async () => {
     // Initiate provider
     const provider = new ethers.providers.Web3Provider(window.ethereum)
+    setProvider(provider)
+
+    const dao = new ethers.Contract(
+      config[31337].dao.address,
+      DAO_ABI,
+      provider
+    )
+    setDao(dao)
+
+    let treasuryBalance = await provider.getBalance(dao.address)
+    treasuryBalance = ethers.utils.formatUnits(treasuryBalance, 18)
+    setTreasuryBalance(treasuryBalance)
 
     // Fetch accounts
     const accounts = await window.ethereum.request({
@@ -29,10 +47,17 @@ function App() {
     const account = ethers.utils.getAddress(accounts[0])
     setAccount(account)
 
-    // Fetch account balance
-    let balance = await provider.getBalance(account)
-    balance = ethers.utils.formatUnits(balance, 18)
-    setBalance(balance)
+    const count = await dao.proposalCount()
+    const items = []
+
+    for (let i = 0; i < count; i++) {
+      const proposal = await dao.proposals(i + 1)
+      items.push(proposal)
+    }
+    setProposals(items)
+
+    const quorum = await dao.quorum()
+    setQuorum(quorum)
 
     setIsLoading(false)
   }
@@ -47,16 +72,26 @@ function App() {
     <Container>
       <Navigation account={account} />
 
-      <h1 className='my-4 text-center'>React Hardhat Template</h1>
+      <h1 className='my-4 text-center'>Welcome to our DAO!</h1>
 
       {isLoading ? (
         <Loading />
       ) : (
         <>
+          <Create provider={provider} dao={dao} setIsLoading={setIsLoading} />
+          <hr />
           <p className='text-center'>
-            <strong>Your ETH Balance:</strong> {balance} ETH
+            <strong>Treasury Balance:</strong> {treasuryBalance}
           </p>
-          <p className='text-center'>Edit App.js to add your code here.</p>
+          <hr />
+
+          <Proposals
+            dao={dao}
+            provider={provider}
+            proposals={proposals}
+            quorum={quorum}
+            setIsLoading={setIsLoading}
+          />
         </>
       )}
     </Container>
