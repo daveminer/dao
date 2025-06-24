@@ -100,6 +100,11 @@
         "internalType": "address payable",
         "name": "_recipient",
         "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_description",
+        "type": "string"
       }
     ],
     "name": "createProposal",
@@ -201,6 +206,11 @@
         "internalType": "bool",
         "name": "finalized",
         "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "description",
+        "type": "string"
       }
     ],
     "stateMutability": "view",

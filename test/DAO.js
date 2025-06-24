@@ -96,7 +96,12 @@ describe('DAO', () => {
       beforeEach(async () => {
         transaction = await dao
           .connect(investor1)
-          .createProposal('Proposal 1', ether(100), recipient.address)
+          .createProposal(
+            'Proposal 1',
+            ether(100),
+            recipient.address,
+            'Description 1'
+          )
         result = await transaction.wait()
       })
 
@@ -124,7 +129,12 @@ describe('DAO', () => {
         await expect(
           dao
             .connect(investor1)
-            .createProposal('Proposal 1', ether(1000), recipient.address)
+            .createProposal(
+              'Proposal 1',
+              ether(1000),
+              recipient.address,
+              'Description 1'
+            )
         ).to.be.revertedWith('Not enough balance')
       })
 
@@ -132,7 +142,12 @@ describe('DAO', () => {
         await expect(
           dao
             .connect(user1)
-            .createProposal('Proposal 1', ether(100), recipient.address)
+            .createProposal(
+              'Proposal 1',
+              ether(100),
+              recipient.address,
+              'Description 1'
+            )
         ).to.be.revertedWith('must be token holder')
       })
     })
@@ -144,7 +159,12 @@ describe('DAO', () => {
     beforeEach(async () => {
       transaction = await dao
         .connect(investor1)
-        .createProposal('Proposal 1', ether(100), recipient.address)
+        .createProposal(
+          'Proposal 1',
+          ether(100),
+          recipient.address,
+          'Description 2'
+        )
       result = await transaction.wait()
     })
 
@@ -202,7 +222,12 @@ describe('DAO', () => {
       beforeEach(async () => {
         transaction = await dao
           .connect(investor1)
-          .createProposal('Proposal 1', ether(100), recipient.address)
+          .createProposal(
+            'Proposal 1',
+            ether(100),
+            recipient.address,
+            'Description 1'
+          )
 
         result = await transaction.wait()
 
@@ -239,7 +264,12 @@ describe('DAO', () => {
       beforeEach(async () => {
         transaction = await dao
           .connect(investor1)
-          .createProposal('Proposal 1', ether(100), recipient.address)
+          .createProposal(
+            'Proposal 1',
+            ether(100),
+            recipient.address,
+            'Description 1'
+          )
 
         result = await transaction.wait()
 

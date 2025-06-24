@@ -33,6 +33,7 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
         <tr>
           <th>#</th>
           <th>Proposal Name</th>
+          <th>Description</th>
           <th>Recipient Address</th>
           <th>Amount</th>
           <th>Status</th>
@@ -49,6 +50,7 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
           <tr key={index}>
             <td>{proposal.id.toString()}</td>
             <td>{proposal.name}</td>
+            <td>{proposal.description}</td>
             <td>{proposal.recipient}</td>
             <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} ETH</td>
             <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
