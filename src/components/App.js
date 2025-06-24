@@ -23,6 +23,11 @@ function App() {
   const [proposals, setProposals] = useState([])
   const [quorum, setQuorum] = useState(null)
 
+  const getRecipientBalance = async (recipient, provider) => {
+    const balance = await provider.getBalance(recipient)
+    return ethers.utils.formatUnits(balance, 'ether')
+  }
+
   const loadBlockchainData = async () => {
     // Initiate provider
     const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -50,7 +55,14 @@ function App() {
     const items = []
 
     for (let i = 0; i < count; i++) {
-      const proposal = await dao.proposals(i + 1)
+      let proposal = await dao.proposals(i + 1)
+      proposal = {
+        ...proposal,
+        recipientBalance: await getRecipientBalance(
+          proposal.recipient,
+          provider
+        ),
+      }
       items.push(proposal)
     }
     setProposals(items)

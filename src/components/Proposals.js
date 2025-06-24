@@ -35,6 +35,7 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
           <th>Proposal Name</th>
           <th>Description</th>
           <th>Recipient Address</th>
+          <th>Recipient Balance</th>
           <th>Amount</th>
           <th>Status</th>
           <th>Total Votes</th>
@@ -47,52 +48,57 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
         </tr>
       </thead>
       <tbody>
-        {proposals.map((proposal, index) => (
-          <tr key={index}>
-            <td>{proposal.id.toString()}</td>
-            <td>{proposal.name}</td>
-            <td>{proposal.description}</td>
-            <td>{proposal.recipient}</td>
-            <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} ETH</td>
-            <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
-            <td>
-              {(Number(proposal.votes) + Number(proposal.downVotes)).toString()}
-            </td>
-            <td>{(proposal.votes - proposal.downVotes).toString()}</td>
-            <td>{proposal.votes.toString()}</td>
-            <td>{proposal.downVotes.toString()}</td>
-            <td>{quorum.toString()}</td>
-            <td>
-              {!proposal.finalized && (
-                <div className='d-flex flex-column gap-2'>
+        {proposals.map((proposal, index) => {
+          return (
+            <tr key={index}>
+              <td>{proposal.id.toString()}</td>
+              <td>{proposal.name}</td>
+              <td>{proposal.description}</td>
+              <td>{proposal.recipient}</td>
+              <td>{proposal.recipientBalance} ETH</td>
+              <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} ETH</td>
+              <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
+              <td>
+                {(
+                  Number(proposal.votes) + Number(proposal.downVotes)
+                ).toString()}
+              </td>
+              <td>{(proposal.votes - proposal.downVotes).toString()}</td>
+              <td>{proposal.votes.toString()}</td>
+              <td>{proposal.downVotes.toString()}</td>
+              <td>{quorum.toString()}</td>
+              <td>
+                {!proposal.finalized && (
+                  <div className='d-flex flex-column gap-2'>
+                    <Button
+                      variant='success'
+                      onClick={() => voteHandler(proposal.id, true)}
+                    >
+                      Vote
+                    </Button>
+                    <Button
+                      variant='danger'
+                      onClick={() => voteHandler(proposal.id, false)}
+                    >
+                      Down Vote
+                    </Button>
+                  </div>
+                )}
+              </td>
+              <td className='align-middle'>
+                {!proposal.finalized && proposal.votes > quorum && (
                   <Button
-                    variant='success'
-                    onClick={() => voteHandler(proposal.id, true)}
+                    variant='primary'
+                    style={{ width: '100%' }}
+                    onClick={() => finalizeHandler(proposal.id)}
                   >
-                    Vote
+                    Finalize
                   </Button>
-                  <Button
-                    variant='danger'
-                    onClick={() => voteHandler(proposal.id, false)}
-                  >
-                    Down Vote
-                  </Button>
-                </div>
-              )}
-            </td>
-            <td className='align-middle'>
-              {!proposal.finalized && proposal.votes > quorum && (
-                <Button
-                  variant='primary'
-                  style={{ width: '100%' }}
-                  onClick={() => finalizeHandler(proposal.id)}
-                >
-                  Finalize
-                </Button>
-              )}
-            </td>
-          </tr>
-        ))}
+                )}
+              </td>
+            </tr>
+          )
+        })}
       </tbody>
     </Table>
   )
