@@ -13,7 +13,6 @@ import DAO_ABI from '../abis/DAO.json'
 
 // Config: Import your network config here
 import config from '../config.json'
-import { setSelectionRange } from '@testing-library/user-event/dist/utils'
 
 function App() {
   const [provider, setProvider] = useState(null)

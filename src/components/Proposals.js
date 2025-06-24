@@ -15,10 +15,10 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
     setIsLoading(true)
   }
 
-  const voteHandler = async (id) => {
+  const voteHandler = async (id, isUpvote) => {
     try {
       const signer = provider.getSigner()
-      const transaction = await dao.connect(signer).vote(id)
+      const transaction = await dao.connect(signer).vote(id, isUpvote)
       await transaction.wait()
     } catch (error) {
       window.alert('User rejected or transaction reverted')
@@ -37,6 +37,9 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
           <th>Amount</th>
           <th>Status</th>
           <th>Total Votes</th>
+          <th>Tallied Votes</th>
+          <th>Up Votes</th>
+          <th>Down Votes</th>
           <th>Cast Vote</th>
           <th>Finalize</th>
         </tr>
@@ -49,19 +52,31 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
             <td>{proposal.recipient}</td>
             <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} ETH</td>
             <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
+            <td>
+              {(Number(proposal.votes) + Number(proposal.downVotes)).toString()}
+            </td>
+            <td>{(proposal.votes - proposal.downVotes).toString()}</td>
             <td>{proposal.votes.toString()}</td>
+            <td>{proposal.downVotes.toString()}</td>
             <td>
               {!proposal.finalized && (
-                <Button
-                  variant='primary'
-                  style={{ width: '100%' }}
-                  onClick={() => voteHandler(proposal.id)}
-                >
-                  Vote
-                </Button>
+                <div className='d-flex flex-column gap-2'>
+                  <Button
+                    variant='success'
+                    onClick={() => voteHandler(proposal.id, true)}
+                  >
+                    Vote
+                  </Button>
+                  <Button
+                    variant='danger'
+                    onClick={() => voteHandler(proposal.id, false)}
+                  >
+                    Down Vote
+                  </Button>
+                </div>
               )}
             </td>
-            <td>
+            <td className='align-middle'>
               {!proposal.finalized && proposal.votes > quorum && (
                 <Button
                   variant='primary'

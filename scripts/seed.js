@@ -63,13 +63,13 @@ async function main() {
       .createProposal(`Proposal ${i + 1}`, ether(100), recipient.address)
     await transaction.wait()
 
-    transaction = await dao.connect(investor1).vote(i + 1)
+    transaction = await dao.connect(investor1).vote(i + 1, true)
     await transaction.wait()
 
-    transaction = await dao.connect(investor2).vote(i + 1)
+    transaction = await dao.connect(investor2).vote(i + 1, true)
     await transaction.wait()
 
-    transaction = await dao.connect(investor3).vote(i + 1)
+    transaction = await dao.connect(investor3).vote(i + 1, true)
     await transaction.wait()
 
     transaction = await dao.connect(investor1).finalizeProposal(i + 1)
@@ -85,10 +85,10 @@ async function main() {
     .createProposal('Proposal 4', ether(100), recipient.address)
   await transaction.wait()
 
-  transaction = await dao.connect(investor2).vote(4)
+  transaction = await dao.connect(investor2).vote(4, true)
   await transaction.wait()
 
-  transaction = await dao.connect(investor3).vote(4)
+  transaction = await dao.connect(investor3).vote(4, true)
   await transaction.wait()
 
   console.log(`Finished.\n`)

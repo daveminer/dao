@@ -73,6 +73,12 @@
         "internalType": "address",
         "name": "investor",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isUpvote",
+        "type": "bool"
       }
     ],
     "name": "Vote",
@@ -99,6 +105,30 @@
     "name": "createProposal",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "downVotes",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -163,6 +193,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "downVotes",
+        "type": "uint256"
+      },
+      {
         "internalType": "bool",
         "name": "finalized",
         "type": "bool"
@@ -203,6 +238,11 @@
         "internalType": "uint256",
         "name": "_id",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isUpvote",
+        "type": "bool"
       }
     ],
     "name": "vote",

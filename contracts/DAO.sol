@@ -15,12 +15,14 @@ contract DAO {
         uint256 amount;
         address payable recipient;
         uint256 votes;
+        uint256 downVotes;
         bool finalized;
     }
 
     uint256 public proposalCount;
     mapping(uint256 => Proposal) public proposals;
     mapping(address => mapping(uint256 => bool)) public votes;
+    mapping(address => mapping(uint256 => bool)) public downVotes;
 
     event Propose(
         uint id,
@@ -31,7 +33,8 @@ contract DAO {
 
     event Vote(
         uint256 id,
-        address investor
+        address investor,
+        bool isUpvote
     );
 
     event Finalize(
@@ -64,22 +67,28 @@ contract DAO {
             _amount,
             _recipient,
             0,
+            0,
             false
         );
 
         emit Propose(proposalCount, _amount, _recipient, msg.sender);
     }
 
-    function vote(uint256 _id) external onlyInvestor {
+    function vote(uint256 _id, bool _isUpvote) external onlyInvestor {
         Proposal storage proposal = proposals[_id];
 
         require(!votes[msg.sender][_id], "already voted");
-    
-        proposal.votes = proposal.votes + token.balanceOf(msg.sender);
+        require(!downVotes[msg.sender][_id], "already down voted");
 
-        votes[msg.sender][_id] = true;
+        if (_isUpvote) {
+            proposal.votes = proposal.votes + token.balanceOf(msg.sender);
+            votes[msg.sender][_id] = true;
+        } else {
+            proposal.downVotes = proposal.downVotes + token.balanceOf(msg.sender);
+            downVotes[msg.sender][_id] = true;
+        }
 
-        emit Vote(_id, msg.sender);
+        emit Vote(_id, msg.sender, _isUpvote);
     }
 
     function finalizeProposal(uint256 _id) external onlyInvestor {
@@ -88,7 +97,7 @@ contract DAO {
         require(!proposal.finalized, "proposal already finalized");
         proposal.finalized = true;
 
-        require(proposal.votes > quorum, "must reach quorum to finalize proposal");
+        require(proposal.votes - proposal.downVotes > quorum, "must reach quorum to finalize proposal");
    
         (bool sent, ) = proposal.recipient.call{value: proposal.amount}("");
         require(sent, "Failed to send Ether");
