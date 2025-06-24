@@ -41,6 +41,7 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
           <th>Tallied Votes</th>
           <th>Up Votes</th>
           <th>Down Votes</th>
+          <th>Quorum</th>
           <th>Cast Vote</th>
           <th>Finalize</th>
         </tr>
@@ -60,6 +61,7 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
             <td>{(proposal.votes - proposal.downVotes).toString()}</td>
             <td>{proposal.votes.toString()}</td>
             <td>{proposal.downVotes.toString()}</td>
+            <td>{quorum.toString()}</td>
             <td>
               {!proposal.finalized && (
                 <div className='d-flex flex-column gap-2'>
