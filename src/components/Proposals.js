@@ -2,7 +2,14 @@ import Table from 'react-bootstrap/Table'
 import Button from 'react-bootstrap/Button'
 import { ethers } from 'ethers'
 
-const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
+const Proposals = ({
+  dao,
+  proposals,
+  quorum,
+  provider,
+  setIsLoading,
+  userVotes,
+}) => {
   const finalizeHandler = async (id) => {
     try {
       const signer = provider.getSigner()
@@ -68,7 +75,7 @@ const Proposals = ({ dao, proposals, quorum, provider, setIsLoading }) => {
               <td>{proposal.downVotes.toString()}</td>
               <td>{quorum.toString()}</td>
               <td>
-                {!proposal.finalized && (
+                {!proposal.finalized && !userVotes.includes(proposal.id) && (
                   <div className='d-flex flex-column gap-2'>
                     <Button
                       variant='success'

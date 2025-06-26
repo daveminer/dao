@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Container } from 'react-bootstrap'
 import { ethers } from 'ethers'
 
@@ -22,13 +22,30 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [proposals, setProposals] = useState([])
   const [quorum, setQuorum] = useState(null)
+  const [userVotes, setUserVotes] = useState([])
 
   const getRecipientBalance = async (recipient, provider) => {
     const balance = await provider.getBalance(recipient)
     return ethers.utils.formatUnits(balance, 'ether')
   }
 
-  const loadBlockchainData = async () => {
+  const getUserVotes = async (proposals, dao, account) => {
+    const votedProposalIds = []
+
+    for (let i = 0; i < proposals.length; i++) {
+      const proposal = proposals[i]
+      const hasVoted = await dao.votes(account, proposal.id)
+      const hasDownVoted = await dao.downVotes(account, proposal.id)
+
+      if (hasVoted || hasDownVoted) {
+        votedProposalIds.push(proposal.id)
+      }
+    }
+
+    return votedProposalIds
+  }
+
+  const loadBlockchainData = useCallback(async () => {
     // Initiate provider
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     setProvider(provider)
@@ -70,14 +87,17 @@ function App() {
     const quorum = await dao.quorum()
     setQuorum(quorum)
 
+    const userVotes = await getUserVotes(items, dao, account)
+    setUserVotes(userVotes)
+
     setIsLoading(false)
-  }
+  }, [])
 
   useEffect(() => {
     if (isLoading) {
       loadBlockchainData()
     }
-  }, [isLoading])
+  }, [isLoading, loadBlockchainData])
 
   return (
     <Container>
@@ -102,6 +122,7 @@ function App() {
             proposals={proposals}
             quorum={quorum}
             setIsLoading={setIsLoading}
+            userVotes={userVotes}
           />
         </>
       )}
