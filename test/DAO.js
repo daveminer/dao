@@ -73,6 +73,12 @@ describe('DAO', () => {
       to: dao.address,
       value: ether(100),
     })
+
+    // Approve DAO to spend tokens
+    transaction = await token
+      .connect(investor1)
+      .approve(dao.address, ether(100))
+    await transaction.wait()
   })
 
   describe('Deployment', () => {
@@ -94,6 +100,12 @@ describe('DAO', () => {
 
     describe('Success', () => {
       beforeEach(async () => {
+        // Approve DAO to spend tokens
+        transaction = await token
+          .connect(investor1)
+          .approve(dao.address, ether(100))
+        await transaction.wait()
+
         transaction = await dao
           .connect(investor1)
           .createProposal(
@@ -103,6 +115,14 @@ describe('DAO', () => {
             'Description 1'
           )
         result = await transaction.wait()
+      })
+
+      it('transfers tokens from proposer to DAO', async () => {
+        const balance = await token.balanceOf(dao.address)
+        expect(balance).to.equal(tokens(100))
+
+        const proposerBalance = await token.balanceOf(investor1.address)
+        expect(proposerBalance).to.equal(tokens(199900))
       })
 
       it('updates proposal count', async () => {
@@ -125,17 +145,20 @@ describe('DAO', () => {
     })
 
     describe('Failure', () => {
-      it('reject invalid amount', async () => {
+      it('requires enough tokens for the deposit transfer', async () => {
+        // Approve DAO to spend tokens
+        await token.connect(investor1).approve(dao.address, tokens(10000000))
+
         await expect(
           dao
             .connect(investor1)
             .createProposal(
               'Proposal 1',
-              ether(1000),
+              tokens(10000000),
               recipient.address,
               'Description 1'
             )
-        ).to.be.revertedWith('Not enough balance')
+        ).to.be.revertedWith('Insufficient token balance for deposit')
       })
 
       it('reject non-investor', async () => {
@@ -157,6 +180,12 @@ describe('DAO', () => {
     let transaction, result
 
     beforeEach(async () => {
+      // Approve DAO to spend tokens
+      transaction = await token
+        .connect(investor1)
+        .approve(dao.address, ether(100))
+      await transaction.wait()
+
       transaction = await dao
         .connect(investor1)
         .createProposal(
@@ -182,7 +211,8 @@ describe('DAO', () => {
 
       it('updates vote count', async () => {
         const proposal = await dao.proposals(1)
-        expect(proposal.votes).to.equal(tokens(400000))
+        // TODO: check
+        expect(proposal.votes).to.equal(tokens(399900))
       })
 
       it('updates down vote count', async () => {
@@ -220,11 +250,17 @@ describe('DAO', () => {
 
     describe('Success', () => {
       beforeEach(async () => {
+        // Approve DAO to spend tokens
+        transaction = await token
+          .connect(investor1)
+          .approve(dao.address, tokens(100))
+        await transaction.wait()
+
         transaction = await dao
           .connect(investor1)
           .createProposal(
             'Proposal 1',
-            ether(100),
+            tokens(100),
             recipient.address,
             'Description 1'
           )
@@ -244,10 +280,12 @@ describe('DAO', () => {
         result = await transaction.wait()
       })
 
-      it('transfers function to recipient', async () => {
-        expect(await ethers.provider.getBalance(recipient.address)).to.equal(
-          tokens(10100)
-        )
+      it('transfers tokens from DAO to recipient', async () => {
+        const balance = await token.balanceOf(recipient.address)
+        expect(balance).to.equal(tokens(100))
+
+        const daoBalance = await token.balanceOf(dao.address)
+        expect(daoBalance).to.equal(tokens(0))
       })
 
       it('updates the proposal to finalized', async () => {
@@ -262,6 +300,12 @@ describe('DAO', () => {
 
     describe('Failure', () => {
       beforeEach(async () => {
+        // Approve DAO to spend tokens
+        transaction = await token
+          .connect(investor1)
+          .approve(dao.address, ether(100))
+        await transaction.wait()
+
         transaction = await dao
           .connect(investor1)
           .createProposal(

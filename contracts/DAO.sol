@@ -58,7 +58,9 @@ contract DAO {
     }
 
     function createProposal(string memory _name, uint256 _amount, address payable _recipient, string memory _description) external onlyInvestor {
-        require(address(this).balance >= _amount, "Not enough balance");
+        require(_amount > 0, "Deposit must be greater than 0");
+        require(token.balanceOf(msg.sender) >= _amount, "Insufficient token balance for deposit");
+        require(token.transferFrom(msg.sender, address(this), _amount), "Deposit transfer failed");
         
         proposalCount++;
 
@@ -99,10 +101,11 @@ contract DAO {
         require(!proposal.finalized, "proposal already finalized");
         proposal.finalized = true;
 
+        // Prevent underflow
+        require(proposal.votes > proposal.downVotes, "must reach quorum to finalize proposal");
         require(proposal.votes - proposal.downVotes > quorum, "must reach quorum to finalize proposal");
    
-        (bool sent, ) = proposal.recipient.call{value: proposal.amount}("");
-        require(sent, "Failed to send Ether");
+        require(token.transfer(proposal.recipient, proposal.amount), "Failed to send tokens");
 
         emit Finalize(_id);
     }

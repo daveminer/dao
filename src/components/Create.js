@@ -6,6 +6,8 @@ const Create = ({ dao, provider, setIsLoading }) => {
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
   const [address, setAddress] = useState('')
+  const [description, setDescription] = useState('')
+  const [deposit, setDeposit] = useState('')
   const [isWaiting, setIsWaiting] = useState(false)
 
   const createHandler = async (e) => {
@@ -18,10 +20,31 @@ const Create = ({ dao, provider, setIsLoading }) => {
         amount.toString(),
         'ether'
       )
+      const formattedDeposit = ethers.utils.parseUnits(
+        deposit.toString(),
+        'ether'
+      )
+
+      // Get token contract
+      const tokenAddress = await dao.token()
+      const tokenABI = [
+        'function approve(address spender, uint256 amount) external returns (bool)',
+      ]
+      const token = new ethers.Contract(tokenAddress, tokenABI, signer)
+
+      // Approve DAO to spend tokens
+      const approveTx = await token.approve(dao.address, formattedDeposit)
+      await approveTx.wait()
 
       const transaction = await dao
         .connect(signer)
-        .createProposal(name, formattedAmount, address)
+        .createProposal(
+          name,
+          formattedAmount,
+          address,
+          description,
+          formattedDeposit
+        )
 
       await transaction.wait()
     } catch (error) {
@@ -55,6 +78,20 @@ const Create = ({ dao, provider, setIsLoading }) => {
           value={address}
           className='my-2'
           onChange={(e) => setAddress(e.target.value)}
+        />
+        <Form.Control
+          type='text'
+          placeholder='Enter description'
+          value={description}
+          className='my-2'
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <Form.Control
+          type='number'
+          placeholder='Enter deposit amount (tokens)'
+          value={deposit}
+          className='my-2'
+          onChange={(e) => setDeposit(e.target.value)}
         />
         {isWaiting ? (
           <Button
