@@ -2,7 +2,7 @@ const { expect } = require('chai')
 const { ethers } = require('hardhat')
 
 const tokens = (n) => {
-  return ethers.utils.parseUnits(n.toString(), 'ether')
+  return ethers.parseUnits(n.toString(), 'ether')
 }
 
 const ether = tokens
@@ -35,7 +35,13 @@ describe('DAO', () => {
 
     // Deploy Token
     const Token = await ethers.getContractFactory('Token')
-    token = await Token.deploy('Dapp University', 'DAPP', '1000000')
+    token = await Token.deploy('Dapp University', 'DAPP', 1000000)
+
+    // Wait for deployment to complete
+    await token.waitForDeployment()
+
+    // Verify token address is not null
+    console.log('Token address:', await token.getAddress())
 
     // Send tokens to investors - each one gets 20%
     transaction = await token
@@ -67,27 +73,32 @@ describe('DAO', () => {
     // Set Quorum to > 50% of token total supply
     // 500k tokens + 1 wei, i.e. 500000000000000000000001
     const DAO = await ethers.getContractFactory('DAO')
-    dao = await DAO.deploy(token.address, '500000000000000000000001')
+    dao = await DAO.deploy(await token.getAddress(), '500000000000000000000001')
+
+    // Wait for DAO deployment to complete
+    await dao.waitForDeployment()
 
     await funder.sendTransaction({
-      to: dao.address,
+      to: await dao.getAddress(),
       value: ether(100),
     })
 
     // Approve DAO to spend tokens
     transaction = await token
       .connect(investor1)
-      .approve(dao.address, ether(100))
+      .approve(await dao.getAddress(), ether(100))
     await transaction.wait()
   })
 
   describe('Deployment', () => {
     it('sends ether to the DAO treasury', async () => {
-      expect(await ethers.provider.getBalance(dao.address)).to.equal(ether(100))
+      expect(await ethers.provider.getBalance(await dao.getAddress())).to.equal(
+        ether(100)
+      )
     })
 
     it('returns token address', async () => {
-      expect(await dao.token()).to.equal(token.address)
+      expect(await dao.token()).to.equal(await token.getAddress())
     })
 
     it('returns quorum', async () => {
@@ -103,7 +114,7 @@ describe('DAO', () => {
         // Approve DAO to spend tokens
         transaction = await token
           .connect(investor1)
-          .approve(dao.address, ether(100))
+          .approve(await dao.getAddress(), ether(100))
         await transaction.wait()
 
         transaction = await dao
@@ -118,7 +129,7 @@ describe('DAO', () => {
       })
 
       it('transfers tokens from proposer to DAO', async () => {
-        const balance = await token.balanceOf(dao.address)
+        const balance = await token.balanceOf(await dao.getAddress())
         expect(balance).to.equal(tokens(100))
 
         const proposerBalance = await token.balanceOf(investor1.address)
@@ -147,7 +158,9 @@ describe('DAO', () => {
     describe('Failure', () => {
       it('requires enough tokens for the deposit transfer', async () => {
         // Approve DAO to spend tokens
-        await token.connect(investor1).approve(dao.address, tokens(10000000))
+        await token
+          .connect(investor1)
+          .approve(await dao.getAddress(), tokens(10000000))
 
         await expect(
           dao
@@ -183,7 +196,7 @@ describe('DAO', () => {
       // Approve DAO to spend tokens
       transaction = await token
         .connect(investor1)
-        .approve(dao.address, ether(100))
+        .approve(await dao.getAddress(), ether(100))
       await transaction.wait()
 
       transaction = await dao
@@ -253,7 +266,7 @@ describe('DAO', () => {
         // Approve DAO to spend tokens
         transaction = await token
           .connect(investor1)
-          .approve(dao.address, tokens(100))
+          .approve(await dao.getAddress(), tokens(100))
         await transaction.wait()
 
         transaction = await dao
@@ -284,7 +297,7 @@ describe('DAO', () => {
         const balance = await token.balanceOf(recipient.address)
         expect(balance).to.equal(tokens(100))
 
-        const daoBalance = await token.balanceOf(dao.address)
+        const daoBalance = await token.balanceOf(await dao.getAddress())
         expect(daoBalance).to.equal(tokens(0))
       })
 
@@ -303,7 +316,7 @@ describe('DAO', () => {
         // Approve DAO to spend tokens
         transaction = await token
           .connect(investor1)
-          .approve(dao.address, ether(100))
+          .approve(await dao.getAddress(), ether(100))
         await transaction.wait()
 
         transaction = await dao

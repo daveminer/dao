@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 contract Token {
     string public name;
@@ -31,7 +31,7 @@ contract Token {
     ) {
         name = _name;
         symbol = _symbol;
-        totalSupply = _totalSupply * (10**decimals);
+        totalSupply = _totalSupply * (10**18);
         balanceOf[msg.sender] = totalSupply;
     }
 
